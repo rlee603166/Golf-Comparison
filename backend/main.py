@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, jsonify, url_for, send_file
+from flask_cors import CORS
 from moviepy.editor import VideoFileClip
 from PIL import Image
 
@@ -13,6 +14,7 @@ from helpers.data_processors import center_pts, convert_to_json
 
 
 app = Flask(__name__)
+CORS(app)
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 PROCESSED_FOLDER = os.path.join(os.getcwd(), 'processed')
@@ -113,13 +115,6 @@ def upload_file():
 @app.route("/gif/<filename>", methods=['GET', 'POST'])
 def get_gif(filename):
     path = os.path.join(app.config['PROCESSED_FOLDER'], filename)
-    # @after_this_request
-    # def remove_file(response):
-    #     try:
-    #         os.remove(path)
-    #     except Exception as e:
-    #         app.logger.error(e)
-    #     return response
     return send_file(path, mimetype='image/gif')
 
 @app.route("/predict/<gif_name>", methods=['GET'])
@@ -134,23 +129,12 @@ def handle_prediction(gif_name):
     
     json_kps = [convert_to_json(keypoint, edge) for keypoint, edge in zip(keypoints, edges)]
     
-    # output = np.stack(output_images, axis=0)
-    # to_gif(output, duration=100, name=f'predicted_{gif_name}')
-    
-    # gif_url = url_for('get_prdicted', filename=gif, _external=True)
-    
     return  jsonify(json_kps)
 
 @app.route("/processed/<filename>", methods=['GET', 'POST'])
 def get_predicted(filename):
     path = os.path.join(app.config['PREDICTED_FOLDER'], filename)
-    # @after_this_request
-    # def remove_file(response):
-    #     try:
-    #         os.remove(path)
-    #     except Exception as e:
-    #         app.logger.error(e)
-    #     return response
+
     return send_file(path, mimetype='image/gif')
     
 

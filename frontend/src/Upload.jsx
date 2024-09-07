@@ -5,10 +5,12 @@ function Upload() {
 
     return (
         <div className="upload-page">
-            Upload a video of your swing from the front and behind!
+            <div id='title-box'>
+                Upload a video of your swing from the front and behind!
+            </div>
             <div className="upload-body">
-                <GetVid id='front-panel' swingType={'front'} />
-                <GetVid id='back-panel' swingType={'back'} />
+                <GetVid id='front-panel' swingType={'Front'} />
+                <GetVid id='back-panel' swingType={'Back'} />
             </div>
         </div>
     )
