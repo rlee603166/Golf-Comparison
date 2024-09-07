@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
+import './styles/GetVid.css';
 
-function GetVid () {
+function UploadBody({ swingType, handleFileChange }) {
+    
+    return (
+        <div id="rectangle">
+            <label htmlFor='inputTag'>
+                {swingType} side
+                <input id='inputTag' type='file' accept='video/mp4' onChange={handleFileChange} />
+            </label>
+        </div>
+    )
+}
+
+
+function GetVid ({ swingType }) {
     
     const [vidURL, setVidURL] = useState(null);
     
@@ -19,18 +33,27 @@ function GetVid () {
         }
     }
     
-    
+    const handleSubmit = (event) => {
+        setVidURL(null);
+
+    }
+
     return (
         <>
-            Hello World!
-            <input type='file' accept='video/mp4' onChange={handleFileChange} />
-            <div className='previews'>
-                {vidURL && (
-                    <div>
-                        <h2>Video Preview:</h2>
-                        <video src={vidURL} controls />
-                    </div>
-                )}
+            <div className="getvid">
+                <h2 className='swing-head' >{swingType} side:</h2>
+                <div className='previews'>
+                    {vidURL ? (
+                        <div>
+                            <video className="video" src={vidURL} controls />
+                        </div>
+                    ) : (
+                        <UploadBody swingType={swingType} handleFileChange={handleFileChange} />
+                    )}
+                </div>
+                <div className="buttons">
+                    <button onClick={handleSubmit}>Submit</button>
+                </div>
             </div>
         </>
     );

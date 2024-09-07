@@ -26,13 +26,27 @@ def center_pts(kps_arr):
     
 
     for i in range(num_frames):
-        keypoints = kps_arr[i][0]
-        edges = kps_arr[i][1]
+        centered_kps = kps_arr[i][0] - np.array([centroid_x, 0])
+        x = centered_kps[:, 0]
+        y = centered_kps[:, 1]
+        y_normalized = (y - np.min(y)) / (np.max(y) - np.min(y))
+        x_normalized = (x - np.min(y)) / (np.max(y) - np.min(y))
 
-        centered_keypoints.append(keypoints - np.array([centroid_x, 0]))
+        normalized_keypoints = np.column_stack((x_normalized, y_normalized))
+
+        edges = kps_arr[i][1]
+        shifted = edges - np.array([centroid_x, 0])
+        edges_x = shifted[:, :, 0]  # Extract x-coordinates of edges (unchanged)
+        edges_y = shifted[:, :, 1]  # Extract y-coordinates of edges
         
-        reshaped = edges.reshape(-1, 2)
-        shifted = reshaped - np.array([centroid_x, 0])
-        centered_edges.append(shifted.reshape(edges.shape))
+        # Normalize only the y-coordinates of the edges using the same y normalization as keypoints
+        edges_y_normalized = (edges_y - np.min(y)) / (np.max(y) - np.min(y))
+        edges_x_normalized = (edges_x - np.min(y)) / (np.max(y) - np.min(y))
+        
+        # Combine the x-coordinates and normalized y-coordinates for edges
+        normalized_edges = np.stack([edges_x_normalized, edges_y_normalized], axis=-1)
+
+        centered_keypoints.append(normalized_keypoints)
+        centered_edges.append(normalized_edges.reshape(edges.shape))
     
     return centered_keypoints, centered_edges

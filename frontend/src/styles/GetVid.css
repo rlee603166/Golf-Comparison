@@ -1,0 +1,33 @@
+.getvid {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+
+    height: 75vh;
+    width: 30vw;
+    padding: 10px; 
+    box-shadow: 0 6px 6px hsl(0deg 0% 0% / 0.3);
+}
+
+video {
+    height: 60vh;
+    width: 30vw;
+}
+
+input[type="file"]{
+    display: none;
+}
+
+label {
+    cursor: pointer;
+}
+
+.swing-head {
+    padding: 0%;
+}
+
+#rectangle {
+    height: 60vh;
+    width: 27.5vw;
+}

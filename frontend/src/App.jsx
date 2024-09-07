@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import './App.css'
-import GetVid from "./GetVid.jsx";
+import Upload from './Upload'
 
 function App() {
     
@@ -8,7 +7,7 @@ function App() {
     
   return (
     <>
-        <GetVid />
+      <Upload />
     </>
   )
 }

@@ -1,0 +1,14 @@
+.upload-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-body {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    gap: 5vw;
+}
