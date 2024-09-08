@@ -85,30 +85,32 @@ def hello_world():
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file found'}), 400
-    video = request.files['file']
-    if video.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    if video and video.filename.endswith('.mp4'):
-        path = os.path.join(app.config['UPLOAD_FOLDER'], video.filename)
-        video.save(path)
+    videos = request.files.getlist('file')
+    if len(videos) < 2:
+        return jsonify({'error': 'Submit two videos!'}), 400
+    if videos and videos[0].filename.endswith('.mp4'):
+        gifs = []
+        for video in videos:
+            path = os.path.join(app.config['UPLOAD_FOLDER'], video.filename)
+            video.save(path)
 
-        gif_name = f'{os.path.splitext(video.filename)[0]}.gif'
-        gif_path = os.path.join(app.config['PROCESSED_FOLDER'], gif_name)
-        video = VideoFileClip(path)
-        video.write_gif(gif_path)
-        
-        print("Video saved at:", path)
-        print("GIF saved at:", gif_path)
+            gif_name = f'{os.path.splitext(video.filename)[0]}.gif'
+            gif_path = os.path.join(app.config['PROCESSED_FOLDER'], gif_name)
+            video = VideoFileClip(path)
+            video.write_gif(gif_path)
+            
+            print("Video saved at:", path)
+            print("GIF saved at:", gif_path)
 
-        # Check if the files exist
-        if os.path.exists(path):
-            print("Video file exists.")
-        if os.path.exists(gif_path):
-            print("GIF file exists.")
+            # Check if the files exist
+            if os.path.exists(path):
+                print("Video file exists.")
+            if os.path.exists(gif_path):
+                print("GIF file exists.")
 
-        gif_url = url_for('get_gif', filename=gif_name, _external=True)
+            gifs.append(url_for('get_gif', filename=gif_name, _external=True))
 
-        return jsonify({'gif_url': gif_url})
+        return jsonify({'gif_url': gifs})
     else:
         return jsonify({'error': 'Video not supported'}), 400
 

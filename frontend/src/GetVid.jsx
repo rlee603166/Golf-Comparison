@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import './styles/GetVid.css';
 import uploadImg from './assets/upload.png';
 
-function GetVid ({ swingType }) {
-    const [gifUrl, setGifUrl] = useState(null);
-    const [vidURL, setVidURL] = useState(null);
-    const [video, setVid] = useState(null);
-    const url = 'http://127.0.0.1:5000/';
-
+function GetVid ({ swingType, setVid, video, gifUrl, setGifUrl, vidURL, setVidURL, currentTime, setCurrentTime, sliderBool, setSliderBool }) {
+    const videoRef = useRef(null);
+    const [duration, setDuration] = useState(0); 
     
     const handleFileChange = (event) => {
         const video = event.target.files[0];
@@ -15,6 +12,7 @@ function GetVid ({ swingType }) {
         if (video && (video.type === 'video/mp4')) {
             try {
                 const url = URL.createObjectURL(video);
+                setSliderBool(true);
                 setVidURL(url);
             } catch (err) {
                 console.error(err);
@@ -24,65 +22,87 @@ function GetVid ({ swingType }) {
         }
     }
     
-    const handleClear = (event) => {
-        setVidURL(null);
-
-    }
-
-    const handleSubmit = async () => {
-        let upload_url = url + 'upload';
-        console.log(upload_url)
-        if (!vidURL) {
-            alert("Please select a file first!");
-            return;
+    useEffect(() => {
+        if (!video) {
+            setVidURL(null);
         }
-        const formData = new FormData();
-        formData.append('file', video);
+    }, [video]); 
 
-        try {
-            const response = await fetch(upload_url, {
-                method: "POST",
-                body: formData, 
-            });
-            if (response.ok) {
-                const data = response.json();
-                setGifUrl(data.gif_url);
-            } else {
-                alert("File upload failed.");
-            }
-        } catch (error) {
-            console.log(error);
-            alert("Error uploading file.");
+    useEffect(() => {
+        const video = videoRef.current;
+    
+        if (video) {
+            const handleLoadedMetadata = () => {
+                setDuration(video.duration);
+            };
+        
+            video.addEventListener('loadedmetadata', handleLoadedMetadata);
+        
+            return () => {
+                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+            };
         }
-    }
+    }, [vidURL]);
+
+    const handleSliderChange = (e) => {
+        const time = parseFloat(e.target.value);
+        if (videoRef.current){
+            videoRef.current.currentTime = time;
+        }
+    };
+    
+    const handleTimeUpdate = () => {
+        setCurrentTime(videoRef.current.currentTime);
+    };
 
     return (
         <>
             <div className="getvid">
-                <h2 className='swing-head' >{swingType} side:</h2>
+                <p className='swing-head' >{swingType} side:</p>
+                <p>Upload your swings then Slide 
+                    to the frame where you make contact:</p>
                 <div className='previews'>
-                    {vidURL ? (
-                        <video className="video" src={vidURL} controls />
-                    ) : (
-                        <div id="rectangle">
-                            <label htmlFor='inputTag'>
-                                <img id='upload-img' src={uploadImg} />
-                                <input id='inputTag' type='file' accept='video/mp4' onChange={handleFileChange} />
-                            </label>
-                        </div>
-                    )}
-                </div>
-                <div id="buttons">
-                    <button className="submit" onClick={handleSubmit}>Submit</button>
-                    <button className="clear" onClick={handleClear}>Clear</button>
-                </div>
-                <div className="gif">
-                    {gifUrl && (
+                    {gifUrl ? (
                         <div>
-                            <img src={gifUrl} alt='upload gif' />
+                            <img className="gif" src={gifUrl} alt='upload gif' />
                         </div>
+                    ) : (vidURL ? (
+                        <>
+                            <div className='slider-view'>
+                            <video 
+                                ref={videoRef} 
+                                src={vidURL} 
+                                width="600" 
+                                onTimeUpdate={handleTimeUpdate} 
+                                style={{ display: 'block', marginBottom: '10px' }} 
+                            />
+                            </div>
+                        </>
+                        ) : (
+                            <div id="rectangle">
+                                <label htmlFor='inputTag'>
+                                    <img id='upload-img' src={uploadImg} />
+                                    <input 
+                                        id='inputTag' 
+                                        type='file' 
+                                        accept='video/mp4' 
+                                        onChange={handleFileChange} 
+                                    />
+                                </label>
+                            </div>
+                        )
                     )}
+
                 </div>
+                <input 
+                    type="range" 
+                    min="0" 
+                    max={duration}
+                    step="0.01"
+                    value={currentTime}
+                    onChange={handleSliderChange}
+                    disabled={!sliderBool}
+                />
             </div>
         </>
     );
