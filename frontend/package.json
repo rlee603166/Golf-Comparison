@@ -14,7 +14,8 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "gifuct-js": "^2.1.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.168.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
