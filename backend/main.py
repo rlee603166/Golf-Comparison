@@ -1,20 +1,17 @@
 import os
-from flask import Flask, request, jsonify, url_for, send_file
-from flask_cors import CORS
+from config import app, db
+from model import Gif
+from flask import Flask, request, jsonify, url_for, send_file, abort
 from moviepy.editor import VideoFileClip
-from PIL import Image
+import uuid
 
 import tensorflow as tf
 import tensorflow_hub as hub
 import numpy as np
 from helpers.movenet_helpers import _keypoints_and_edges_for_display
 from helpers.vid_helpers import init_crop_region, determine_crop_region, run_inference
-from helpers.data_processors import center_pts, convert_to_json
+from helpers.data_processors import center_pts, convert_to_json, recursive_convert_to_list
 
-
-
-app = Flask(__name__)
-CORS(app)
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 PROCESSED_FOLDER = os.path.join(os.getcwd(), 'processed')
@@ -43,11 +40,8 @@ else:
 def movenet(input_image):
     model = module.signatures['serving_default']
 
-    # SavedModel format expects tensor type of int32.
     input_image = tf.cast(input_image, dtype=tf.int32)
-    # Run model inference.
     outputs = model(input_image)
-    # Output is a [1, 1, 17, 3] tensor.
     keypoints_with_scores = outputs['output_0'].numpy()
     return keypoints_with_scores
 
@@ -102,17 +96,45 @@ def upload_file():
             print("Video saved at:", path)
             print("GIF saved at:", gif_path)
 
-            # Check if the files exist
             if os.path.exists(path):
                 print("Video file exists.")
             if os.path.exists(gif_path):
                 print("GIF file exists.")
 
-            gifs.append(url_for('get_gif', filename=gif_name, _external=True))
+            gifs.append(gif_name)
+            
+        process_id = str(uuid.uuid4())
+        
+        front_path, back_path = os.path.join(app.config['PROCESSED_FOLDER'], gifs[0]), os.path.join(app.config['PROCESSED_FOLDER'], gifs[1])
+        front = tf.io.read_file(front_path)
+        front = tf.image.decode_gif(front)
+        
+        back = tf.io.read_file(back_path)
+        back = tf.image.decode_gif(back)
+        
+        front_kps_edges = predict(front)
+        back_kps_edges = predict(back)
+        
+        front_kps, front_edges = center_pts(front_kps_edges)
+        back_kps, back_edges = center_pts(back_kps_edges)
+        
+        front_kps = recursive_convert_to_list(front_kps)
+        front_edges = recursive_convert_to_list(front_edges)
+        back_kps = recursive_convert_to_list(back_kps)
+        back_edges = recursive_convert_to_list(back_edges)
+        
+        prediction = Gif(process_id=process_id, front_kps=front_kps, front_edges=front_edges, back_kps=back_kps , back_edges=back_edges)
+        db.session.add(prediction)
+        db.session.commit()
 
-        return jsonify({'gif_url': gifs})
+        return jsonify({'process_id': process_id})
     else:
         return jsonify({'error': 'Video not supported'}), 400
+    
+@app.route("/get/<process_id>", methods=['GET'])
+def get(process_id):
+    gif = Gif.query.filter_by(process_id=process_id).first()
+    return jsonify({ 'prediction': gif.to_json() })
 
 @app.route("/gif/<filename>", methods=['GET', 'POST'])
 def get_gif(filename):
@@ -139,6 +161,27 @@ def get_predicted(filename):
 
     return send_file(path, mimetype='image/gif')
     
+    
+#################################################
+#                   Only for dev                #
+#################################################
+    
+@app.route('/clear-database', methods=['POST'])
+def clear_database():
+    if not app.config['DEBUG']:  # Ensure this is only run in development mode
+        abort(403, description="Forbidden: This endpoint is only for development.")
+
+    # Drop all tables and recreate them
+    db.drop_all()  # This will drop all tables
+    db.create_all()  # Recreate the tables based on your models
+    db.session.commit()
+
+    return jsonify({"message": "Database cleared and recreated!"})
+
+
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
+        
     app.run(debug=True)

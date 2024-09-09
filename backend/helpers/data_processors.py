@@ -58,3 +58,12 @@ def center_pts(kps_arr):
         centered_edges.append(normalized_edges.reshape(edges.shape))
     
     return centered_keypoints, centered_edges
+
+def recursive_convert_to_list(data):
+    if isinstance(data, np.ndarray):
+        return data.tolist()
+    elif isinstance(data, list):
+        return [recursive_convert_to_list(item) for item in data]
+    elif isinstance(data, dict):
+        return {key: recursive_convert_to_list(value) for key, value in data.items()}
+    return data
