@@ -115,15 +115,14 @@ def upload_file():
         front_kps_edges = predict(front)
         back_kps_edges = predict(back)
         
-        front_kps, front_edges = center_pts(front_kps_edges)
-        back_kps, back_edges = center_pts(back_kps_edges)
+        front_kps = center_pts(front_kps_edges)
+        back_kps = center_pts(back_kps_edges)
         
         front_kps = recursive_convert_to_list(front_kps)
-        front_edges = recursive_convert_to_list(front_edges)
         back_kps = recursive_convert_to_list(back_kps)
-        back_edges = recursive_convert_to_list(back_edges)
-        
-        prediction = Gif(process_id=process_id, front_kps=front_kps, front_edges=front_edges, back_kps=back_kps , back_edges=back_edges)
+        print(front_kps)
+        print(back_kps)
+        prediction = Gif(process_id=process_id, front_kps=front_kps, back_kps=back_kps)
         db.session.add(prediction)
         db.session.commit()
 
@@ -134,6 +133,7 @@ def upload_file():
 @app.route("/get/<process_id>", methods=['GET'])
 def get(process_id):
     gif = Gif.query.filter_by(process_id=process_id).first()
+    
     return jsonify({ 'prediction': gif.to_json() })
 
 @app.route("/gif/<filename>", methods=['GET', 'POST'])

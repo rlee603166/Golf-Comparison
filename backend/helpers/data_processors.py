@@ -14,6 +14,8 @@ def center_pts(kps_arr):
     centroid_y = 0
     num_pts = 0
     
+    last_valid_xy = None
+    
     for i in range(num_frames):
         keypoints = kps_arr[i][0]
         num_pts += len(keypoints)
@@ -25,11 +27,23 @@ def center_pts(kps_arr):
     centroid_y /= num_pts
     
     centered_keypoints = []
-    centered_edges = []
     
 
     for i in range(num_frames):
-        centered_kps = kps_arr[i][0] - np.array([0, 0])
+        front_xy = kps_arr[i][0]
+
+        # Cache or replace missing points in front_xy
+        if len(front_xy) < 17:
+            if last_valid_xy is not None:
+                front_xy = last_valid_xy
+            else:
+                front_xy = np.insert(front_xy, 10, [[front_xy[9, 0] - 1, front_xy[9, 1] - 1]], axis=0)
+                
+            print(len(front_xy))
+        else:
+            last_valid_xy = front_xy 
+        
+        centered_kps = front_xy - np.array([0, 0])
         x = centered_kps[:, 0]
         y = centered_kps[:, 1]
         x_normalized = (x - np.min(y)) / (np.max(y) - np.min(y))
@@ -40,24 +54,9 @@ def center_pts(kps_arr):
         x_centered = x_normalized - np.max(x_normalized) + ((np.max(x_normalized) - np.min(x_normalized)) / 2)
 
         normalized_keypoints = np.column_stack((x_centered, y_inverted))
-
-        edges = kps_arr[i][1]
-        shifted = edges - np.array([centroid_x, centroid_y])
-        edges_x = shifted[:, :, 0]
-        edges_y = shifted[:, :, 1]
-        
-        edges_y_normalized = (edges_y - np.min(y)) / (np.max(y) - np.min(y))
-        inverted_y_edges = np.max(edges_y_normalized) - edges_y_normalized
-        
-        edges_x_normalized = (edges_x - np.min(y)) / (np.max(y) - np.min(y))
-        edges_x_centered = edges_x_normalized - np.max(edges_x_normalized) + ((np.max(edges_x_normalized) - np.min(edges_x_normalized)) / 2)
-        
-        normalized_edges = np.stack([edges_x_centered, inverted_y_edges], axis=-1)
-
         centered_keypoints.append(normalized_keypoints)
-        centered_edges.append(normalized_edges.reshape(edges.shape))
     
-    return centered_keypoints, centered_edges
+    return centered_keypoints
 
 def recursive_convert_to_list(data):
     if isinstance(data, np.ndarray):
