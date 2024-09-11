@@ -2,9 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import './styles/GetVid.css';
 import uploadImg from './assets/upload.png';
 
-function GetVid ({ swingType, setVid, video, gifUrl, setGifUrl, vidURL, setVidURL, currentTime, setCurrentTime, sliderBool, setSliderBool }) {
+function GetVid ({ swingType, setVid, video, gifUrl, setGifUrl, vidURL, setVidURL, currentTime, setCurrentTime, sliderBool, setSliderBool, duration, setDuration }) {
     const videoRef = useRef(null);
-    const [duration, setDuration] = useState(0); 
     
     const handleFileChange = (event) => {
         const video = event.target.files[0];

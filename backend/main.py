@@ -10,7 +10,7 @@ import tensorflow_hub as hub
 import numpy as np
 from helpers.movenet_helpers import _keypoints_and_edges_for_display
 from helpers.vid_helpers import init_crop_region, determine_crop_region, run_inference
-from helpers.data_processors import center_pts, convert_to_json, recursive_convert_to_list
+from helpers.data_processors import align_vids, center_pts, convert_to_json, recursive_convert_to_list
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -31,7 +31,7 @@ if model_name == 'movenet_lightning':
     module = hub.load('https://tfhub.dev/google/movenet/singlepose/lightning/4')
     input_size = 192
 elif model_name == 'movenet_thunder':
-    module = hub.load('https://tfhub.dev/google/movenet/singlepose/thunder/4')
+    module = hub.load('https://www.kaggle.com/models/google/movenet/TensorFlow2/singlepose-thunder/4')
     input_size = 256
 else:
     raise ValueError("Unsupported model_name name: %s" % model_name)
@@ -80,6 +80,15 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file found'}), 400
     videos = request.files.getlist('file')
+    
+    front_impact_time = request.form.get('front_impact_time')
+    back_impact_time = request.form.get('back_impact_time')
+    try:
+        front_impact_time = float(front_impact_time) if front_impact_time else None
+        back_impact_time = float(back_impact_time) if back_impact_time else None
+    except ValueError:
+        return jsonify({'error': 'Invalid impact time format'}), 400
+
     if len(videos) < 2:
         return jsonify({'error': 'Submit two videos!'}), 400
     if videos and videos[0].filename.endswith('.mp4'):
@@ -120,8 +129,9 @@ def upload_file():
         
         front_kps = recursive_convert_to_list(front_kps)
         back_kps = recursive_convert_to_list(back_kps)
-        print(front_kps)
-        print(back_kps)
+        
+        front_kps, back_kps = align_vids(front_kps, float(front_impact_time), back_kps, float(back_impact_time))
+        assert len(front_kps) == len(back_kps)
         prediction = Gif(process_id=process_id, front_kps=front_kps, back_kps=back_kps)
         db.session.add(prediction)
         db.session.commit()

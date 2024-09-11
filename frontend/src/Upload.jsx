@@ -3,7 +3,7 @@ import GetVid from "./GetVid"
 import './styles/Upload.css'
 
 
-function Upload() {
+function Upload({ setProcessID }) {
     const [front, setFront] = useState(null);
     const [back, setBack] = useState(null);
     const [frontGifUrl, setFrontGifUrl] = useState(null);
@@ -13,9 +13,12 @@ function Upload() {
 
     const [frontTime, setFrontTime] = useState(0);   
     const [backTime, setBackTime] = useState(0);   
+    const [frontDuration, setFrontDuration] = useState(0);
+    const [backDuration, setBackDuration] = useState(0);
 
     const [frontSlider, setFrontSlider] = useState(false);
     const [backSlider, setBackSlider] = useState(false);
+
 
     const url = 'http://127.0.0.1:5000/';
 
@@ -41,7 +44,10 @@ function Upload() {
         }
         const formData = new FormData();
         formData.append('file', front);
-        formData.append('file', back);
+        formData.append('file', back);    
+        formData.append('front_impact_time', (frontTime / frontDuration));
+        formData.append('back_impact_time', (backTime / backDuration));
+
         try {
             const response = await fetch(upload_url, {
                 method: "POST",
@@ -49,8 +55,7 @@ function Upload() {
             });
             if (response.ok) {
                 const data = await response.json();
-                setFrontGifUrl(data.gif_url[0]);
-                setBackGifUrl(data.gif_url[1]);
+                setProcessID(data.process_id);
             } else {
                 alert("File upload failed.");
             }
@@ -84,6 +89,8 @@ function Upload() {
                         setCurrentTime={setFrontTime}
                         sliderBool={frontSlider}
                         setSliderBool={setFrontSlider}
+                        duration={frontDuration}
+                        setDuration={setFrontDuration}
                     />
                 </div>
                 <div className="getvid-card">
@@ -99,6 +106,8 @@ function Upload() {
                         setCurrentTime={setBackTime}
                         sliderBool={backSlider}
                         setSliderBool={setBackSlider}
+                        duration={backDuration}
+                        setDuration={setBackDuration}
                     />
                 </div>
             </div>

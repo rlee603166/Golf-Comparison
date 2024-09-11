@@ -58,6 +58,24 @@ def center_pts(kps_arr):
     
     return centered_keypoints
 
+def align_vids(front, f_impact, back, b_impact):
+    f_impact_frame = int(len(front) * f_impact)
+    b_impact_frame = int(len(back) * b_impact)
+
+    difference = f_impact_frame - b_impact_frame
+
+    if difference > 0:
+        front = front[difference::].copy()
+    elif difference < 0:
+        back = back[abs(difference)::].copy()
+
+    if len(front) < len(back):
+        back = back[:len(front)]
+    elif len(back) < len(front):
+        front = front[:len(back)]
+
+    return front, back
+
 def recursive_convert_to_list(data):
     if isinstance(data, np.ndarray):
         return data.tolist()

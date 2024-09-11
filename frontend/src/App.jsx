@@ -8,14 +8,14 @@ import Three from './Three'
 
 function App() {
   const [gifData, setGifData] = useState([]);
-
-  let url = `http://127.0.0.1:5000/get/f51ec3f3-445b-4c2b-a089-50eff62fddfa`;
+  const [processID, setProcessID] = useState(null);
+  let url = `http://127.0.0.1:5000/get/`;
 
   useEffect(() => {
-    fetchPredictions();
-  }, []);
+    fetchPredictions(`${url}${processID}`);
+  }, [processID]);
 
-  const fetchPredictions = async () => {
+  const fetchPredictions = async (url) => {
     const response = await fetch(url);
     const data = await response.json();
     const predictions = data.prediction;
@@ -25,11 +25,11 @@ function App() {
   return (
     <>
       {/* <Three /> */}
-      {gifData ? (
+      <Upload setProcessID={setProcessID} />
+      {gifData.length > 0 ? (
         <PoseView player='rory-front' width={window.innerWidth} height={window.innerHeight} gifData={gifData}  />
       ) : (null)}
       
-      {/* <Upload /> */}
       {/* <VidSlider videoFile={roryFront} />
       <VidSlider videoFile={roryBack} /> */}
     </>
