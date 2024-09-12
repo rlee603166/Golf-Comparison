@@ -68,13 +68,13 @@ function GetVid ({ swingType, setVid, video, gifUrl, setGifUrl, vidURL, setVidUR
                     ) : (vidURL ? (
                         <>
                             <div className='slider-view'>
-                            <video 
-                                ref={videoRef} 
-                                src={vidURL} 
-                                width="600" 
-                                onTimeUpdate={handleTimeUpdate} 
-                                style={{ display: 'block', marginBottom: '10px' }} 
-                            />
+                                <video 
+                                    ref={videoRef} 
+                                    src={vidURL} 
+                                    width="600" 
+                                    onTimeUpdate={handleTimeUpdate} 
+                                    style={{ display: 'block', marginBottom: '10px' }} 
+                                />
                             </div>
                         </>
                         ) : (

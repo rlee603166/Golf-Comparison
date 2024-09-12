@@ -22,7 +22,7 @@
 
 
 .gif,
-video {
+.slider-view video {
     height: 100%;
     width: auto;
     max-height: 60vh;

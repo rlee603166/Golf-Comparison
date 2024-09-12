@@ -3,7 +3,7 @@ import GetVid from "./GetVid"
 import './styles/Upload.css'
 
 
-function Upload({ setProcessID }) {
+function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFrontVideo, setFetchAble }) {
     const [front, setFront] = useState(null);
     const [back, setBack] = useState(null);
     const [frontGifUrl, setFrontGifUrl] = useState(null);
@@ -36,17 +36,21 @@ function Upload({ setProcessID }) {
     }
 
     const handleSubmit = async () => {
+        setDifference(frontTime - backTime);
         let upload_url = url + 'upload';
         console.log(upload_url)
         if (!front && !back) {
             alert("Please select a file first!");
             return;
         }
+
         const formData = new FormData();
         formData.append('file', front);
         formData.append('file', back);    
         formData.append('front_impact_time', (frontTime / frontDuration));
         formData.append('back_impact_time', (backTime / backDuration));
+        setFrontVideo(frontURL);
+        setBackVideo(backURL);
 
         try {
             const response = await fetch(upload_url, {
@@ -56,21 +60,17 @@ function Upload({ setProcessID }) {
             if (response.ok) {
                 const data = await response.json();
                 setProcessID(data.process_id);
+                setRoryID(data.rory_id);
             } else {
                 alert("File upload failed.");
             }
         } catch (error) {
             console.log(error);
             alert("Error uploading file.");
+        } finally {
+            setFetchAble(true);
         }
     }
-
-    useEffect(() => {
-        console.log(frontTime)
-    }, [frontTime])    
-    useEffect(() => {
-        console.log(backTime)
-    }, [backTime])
 
     return (
         <div className="upload-page">

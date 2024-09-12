@@ -1,37 +1,46 @@
 import Upload from './Upload'
-import VidSlider from './VidSlider';
-import roryFront from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-front.mp4'
-import roryBack from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-back.mp4'
 import { useEffect, useState } from 'react';
 import PoseView from './PoseView';
-import Three from './Three'
+import VidSlider from './VidSlider';
+
+import roryFront from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-front.mp4'
+import roryBack from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-back.mp4'
+
 
 function App() {
-  const [gifData, setGifData] = useState([]);
   const [processID, setProcessID] = useState(null);
-  let url = `http://127.0.0.1:5000/get/`;
+  const [gifData, setGifData] = useState([]);
+  const [roryID, setRoryID] = useState(null);
+  const [roryGif, setRoryGif] = useState([]);
+  const [difference, setDifference] = useState(0);
+  const [fetchAble, setFetchAble] = useState(false);
 
-  useEffect(() => {
-    fetchPredictions(`${url}${processID}`);
-  }, [processID]);
-
-  const fetchPredictions = async (url) => {
-    const response = await fetch(url);
-    const data = await response.json();
-    const predictions = data.prediction;
-    setGifData(predictions);
-  }
+  const [frontVideo, setFrontVideo] = useState(0);
+  const [backVideo, setBackVideo] = useState(0);
 
   return (
     <>
       {/* <Three /> */}
-      <Upload setProcessID={setProcessID} />
-      {gifData.length > 0 ? (
-        <PoseView player='rory-front' width={window.innerWidth} height={window.innerHeight} gifData={gifData}  />
-      ) : (null)}
-      
-      {/* <VidSlider videoFile={roryFront} />
-      <VidSlider videoFile={roryBack} /> */}
+      {!fetchAble ? (
+          <Upload 
+            setProcessID={setProcessID} 
+            setRoryID={setRoryID} 
+            setDifference={setDifference}
+            setBackVideo={setBackVideo}
+            setFrontVideo={setFrontVideo}
+            setFetchAble={setFetchAble}
+          /> 
+        ): (
+          <PoseView 
+            frontVideo={frontVideo} 
+            backVideo={backVideo}
+            processID={processID}
+            roryID={roryID}
+            difference={difference}
+            fetchAble={fetchAble}
+          />
+        )
+      }
     </>
   );
 }

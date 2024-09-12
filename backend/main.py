@@ -2,6 +2,7 @@ import os
 from config import app, db
 from model import Gif
 from flask import Flask, request, jsonify, url_for, send_file, abort
+from sqlalchemy import and_
 from moviepy.editor import VideoFileClip
 import uuid
 
@@ -10,7 +11,7 @@ import tensorflow_hub as hub
 import numpy as np
 from helpers.movenet_helpers import _keypoints_and_edges_for_display
 from helpers.vid_helpers import init_crop_region, determine_crop_region, run_inference
-from helpers.data_processors import align_vids, center_pts, convert_to_json, recursive_convert_to_list
+from helpers.data_processors import align_vids, align_with_rory, center_pts, convert_to_json, recursive_convert_to_list
 
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -23,6 +24,9 @@ app.config['PREDICTED_FOLDER'] = PREDICTED_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 os.makedirs(PREDICTED_FOLDER, exist_ok=True)
+
+# Read from
+rory_process_id = 'a6f3288e-195a-4a04-b662-85aca46d0188'
 
 
 model_name = 'movenet_thunder'
@@ -111,7 +115,11 @@ def upload_file():
                 print("GIF file exists.")
 
             gifs.append(gif_name)
-            
+        
+        Gif.query.filter(Gif.process_id != rory_process_id).delete()
+        
+        db.session.commit()    
+        
         process_id = str(uuid.uuid4())
         
         front_path, back_path = os.path.join(app.config['PROCESSED_FOLDER'], gifs[0]), os.path.join(app.config['PROCESSED_FOLDER'], gifs[1])
@@ -130,21 +138,38 @@ def upload_file():
         front_kps = recursive_convert_to_list(front_kps)
         back_kps = recursive_convert_to_list(back_kps)
         
-        front_kps, back_kps = align_vids(front_kps, float(front_impact_time), back_kps, float(back_impact_time))
+        front_kps, back_kps, impact_frame = align_vids(front_kps, float(front_impact_time), back_kps, float(back_impact_time))
         assert len(front_kps) == len(back_kps)
+        
+        rory = Gif.query.filter_by(process_id=rory_process_id).first()
+        rory_front, rory_back = rory.front_kps, rory.back_kps
+        
+        front_kps, back_kps, temp_front, temp_back, temp_impact_frame = align_with_rory(front_kps, back_kps, rory_front, rory_back, impact_frame)
+        
+        temp_id = str(uuid.uuid4())
+        
+        temp_rory = Gif(process_id=temp_id, front_kps=temp_front, back_kps=temp_back)
         prediction = Gif(process_id=process_id, front_kps=front_kps, back_kps=back_kps)
+        
         db.session.add(prediction)
+        db.session.add(temp_rory)
         db.session.commit()
 
-        return jsonify({'process_id': process_id})
+        print('process_id: ', process_id)
+        print('rory_id:',  temp_id)
+        return jsonify({'process_id': process_id, 'rory_id': temp_id, 'impact_frame': temp_impact_frame})
     else:
         return jsonify({'error': 'Video not supported'}), 400
     
 @app.route("/get/<process_id>", methods=['GET'])
 def get(process_id):
     gif = Gif.query.filter_by(process_id=process_id).first()
+    if gif:
+        response_data = gif.to_json()
+        
+        return jsonify({ 'prediction': response_data })
     
-    return jsonify({ 'prediction': gif.to_json() })
+    return jsonify({ 'error': 'GIF not found' }), 404
 
 @app.route("/gif/<filename>", methods=['GET', 'POST'])
 def get_gif(filename):
@@ -175,15 +200,19 @@ def get_predicted(filename):
 #################################################
 #                   Only for dev                #
 #################################################
+
+@app.route('/count', methods=['GET'])
+def get_count():
+    query = db.session.query(Gif)
+    
+    return jsonify({ 'database_count': query.count() })
     
 @app.route('/clear-database', methods=['POST'])
 def clear_database():
     if not app.config['DEBUG']:  # Ensure this is only run in development mode
         abort(403, description="Forbidden: This endpoint is only for development.")
 
-    # Drop all tables and recreate them
-    db.drop_all()  # This will drop all tables
-    db.create_all()  # Recreate the tables based on your models
+    db.session.query(Gif).filter(Gif.process_id != rory_process_id).delete()
     db.session.commit()
 
     return jsonify({"message": "Database cleared and recreated!"})

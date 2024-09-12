@@ -68,13 +68,43 @@ def align_vids(front, f_impact, back, b_impact):
         front = front[difference::].copy()
     elif difference < 0:
         back = back[abs(difference)::].copy()
-
+        
+    impact_frame = f_impact_frame
+    
     if len(front) < len(back):
         back = back[:len(front)]
+        impact_frame = f_impact_frame
     elif len(back) < len(front):
         front = front[:len(back)]
+        impact_frame = b_impact_frame
 
-    return front, back
+    return front, back, impact_frame
+
+def align_with_rory(front, back, rory_front, rory_back, impact_frame):
+    rory_impact = 0.6530876172001293
+    rory_impact_frame = int(len(rory_front) * rory_impact)
+    
+    difference = rory_impact_frame - impact_frame
+    
+    if difference > 0:
+        rory_front = rory_front[difference::]
+        rory_back = rory_back[difference::]
+        rory_impact_frame -= difference
+    elif difference < 0:
+        front = front[abs(difference)::]
+        back = back[abs(difference)::]
+    
+    if len(rory_front) < len(front):
+        front = front[:len(rory_front)]
+        back = back[:len(rory_front)]
+    elif len(rory_front) > len(front):
+        rory_front = rory_front[:len(front)]
+        rory_back = rory_back[:len(back)]
+        
+    return front, back, rory_front, rory_back, rory_impact_frame
+
+    
+    
 
 def recursive_convert_to_list(data):
     if isinstance(data, np.ndarray):
