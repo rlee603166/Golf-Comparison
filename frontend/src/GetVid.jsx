@@ -58,8 +58,6 @@ function GetVid ({ swingType, setVid, video, gifUrl, setGifUrl, vidURL, setVidUR
         <>
             <div className="getvid">
                 <p className='swing-head' >{swingType} side:</p>
-                <p>Upload your swings then Slide 
-                    to the frame where you make contact:</p>
                 <div className='previews'>
                     {gifUrl ? (
                         <div>

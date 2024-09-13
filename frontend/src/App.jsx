@@ -1,10 +1,9 @@
 import Upload from './Upload'
 import { useEffect, useState } from 'react';
 import PoseView from './PoseView';
-import VidSlider from './VidSlider';
+import Landing from './Landing';
 
-import roryFront from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-front.mp4'
-import roryBack from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-back.mp4'
+import './styles/index.css';
 
 
 function App() {
@@ -18,18 +17,21 @@ function App() {
   const [frontVideo, setFrontVideo] = useState(0);
   const [backVideo, setBackVideo] = useState(0);
 
+
   return (
     <>
-      {/* <Three /> */}
       {!fetchAble ? (
-          <Upload 
-            setProcessID={setProcessID} 
-            setRoryID={setRoryID} 
-            setDifference={setDifference}
-            setBackVideo={setBackVideo}
-            setFrontVideo={setFrontVideo}
-            setFetchAble={setFetchAble}
-          /> 
+          <>
+            <Landing />
+            <Upload 
+              setProcessID={setProcessID} 
+              setRoryID={setRoryID} 
+              setDifference={setDifference}
+              setBackVideo={setBackVideo}
+              setFrontVideo={setFrontVideo}
+              setFetchAble={setFetchAble}
+            />
+          </> 
         ): (
           <PoseView 
             frontVideo={frontVideo} 
@@ -38,6 +40,7 @@ function App() {
             roryID={roryID}
             difference={difference}
             fetchAble={fetchAble}
+            setFetchAble={setFetchAble}
           />
         )
       }

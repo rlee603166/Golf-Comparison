@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import GetVid from "./GetVid"
 import './styles/Upload.css'
 
@@ -6,8 +8,10 @@ import './styles/Upload.css'
 function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFrontVideo, setFetchAble }) {
     const [front, setFront] = useState(null);
     const [back, setBack] = useState(null);
+
     const [frontGifUrl, setFrontGifUrl] = useState(null);
     const [backGifUrl, setBackGifUrl] = useState(null);
+
     const [frontURL, setFrontURL] = useState(null);
     const [backURL, setBackURL] = useState(null);
 
@@ -19,7 +23,7 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
     const [frontSlider, setFrontSlider] = useState(false);
     const [backSlider, setBackSlider] = useState(false);
 
-
+    const [open, setOpen] = useState(false);
     const url = 'http://127.0.0.1:5000/';
 
     const handleClear = () => {
@@ -36,9 +40,9 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
     }
 
     const handleSubmit = async () => {
+        handleOpen();
         setDifference(frontTime - backTime);
         let upload_url = url + 'upload';
-        console.log(upload_url)
         if (!front && !back) {
             alert("Please select a file first!");
             return;
@@ -49,8 +53,7 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
         formData.append('file', back);    
         formData.append('front_impact_time', (frontTime / frontDuration));
         formData.append('back_impact_time', (backTime / backDuration));
-        setFrontVideo(frontURL);
-        setBackVideo(backURL);
+        saveToLocal();
 
         try {
             const response = await fetch(upload_url, {
@@ -68,13 +71,27 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
             console.log(error);
             alert("Error uploading file.");
         } finally {
+            handleClose();
             setFetchAble(true);
         }
     }
 
+    const saveToLocal = () => {
+        localStorage.setItem('frontUrl', frontURL);
+        localStorage.setItem('backUrl', backURL);
+    }
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
     return (
         <div className="upload-page">
             <p className='title-box'>Upload videos of you swing!</p>
+            <p>Slide to the frame where you make contact:</p>
             <div className="upload-body">
                 <div className="getvid-card">
                     <GetVid
@@ -115,6 +132,13 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
                 <button className="submit" onClick={handleSubmit}>Submit</button>
                 <button className="clear" onClick={handleClear}>Clear</button>
             </div>
+            <Backdrop
+                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1, display: 'flex', flexDirection:'column' })}
+                open={open}
+            >
+                <h2>This may take a couple minutes<br></br>Analyzing...</h2>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </div>
     )
 }

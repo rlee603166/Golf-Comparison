@@ -65,6 +65,8 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
             }
 
             const scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0xa0a0a0 );
+            scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
             const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
             camera.position.set(0, 0.5, 1.5);
             cameraRef.current = camera;
@@ -90,12 +92,27 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
             rendererRef.current = renderer;
             sceneRef.current = scene;
 
-            const light = new THREE.DirectionalLight( 0xffffff, 3 );
-            light.position.set( 1, 1, 1 ).normalize();
-            scene.add( light );
+            const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x8d8d8d, 3 );
+            hemiLight.position.set( 0, 20, 0 );
+            scene.add( hemiLight );
 
-            const axesHelper = new THREE.AxesHelper( 5 );
-            scene.add( axesHelper );
+            const dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
+            dirLight.position.set( - 3, 10, - 10 );
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 2;
+            dirLight.shadow.camera.bottom = - 2;
+            dirLight.shadow.camera.left = - 2;
+            dirLight.shadow.camera.right = 2;
+            dirLight.shadow.camera.near = 0.1;
+            dirLight.shadow.camera.far = 40;
+            scene.add( dirLight );
+
+
+            const size = 5;
+            const divisions = 10;
+
+            const gridHelper = new THREE.GridHelper( size, divisions );
+            scene.add( gridHelper );
 
             const animate = function () {
                 requestAnimationFrame( animate );
@@ -137,7 +154,7 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
             spheresRef.current.push(sphere);
         });
         
-        const lineMaterial = new THREE.LineBasicMaterial({ color: '#A9A9A9' });
+        const lineMaterial = new THREE.LineBasicMaterial({ color: '#000000' });
 
         edges.forEach((edge, index)=> {
             const points = [
@@ -200,7 +217,9 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
                     </div>
                 </div>
             )}
-            <div ref={mountRef} style={{ width: `${width}`, height: `${height}` }}></div>           
+            <div className='three' >
+                <div ref={mountRef} style={{ width: `${width}`, height: `${height}` }}></div>
+            </div>
             {!isLeft && (
                 <div className="videos">
                     <div className="video-container">

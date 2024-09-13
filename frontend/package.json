@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.10",
+    "@mui/material": "^6.1.0",
     "gifuct-js": "^2.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

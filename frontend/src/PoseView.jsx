@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import SwingView from "./SwingView";
+import App from "./App";
+import './styles/Upload.css'
 import roryFront from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-front.mp4'
 import roryBack from '/Users/ryanlee/Golf-Comparison/backend/test-videos/rory-back.mp4'
 import './styles/PoseView.css'
 
-function PoseView({ videoFront, videoBack, processID, roryID, difference, fetchAble }) {
+function PoseView({ processID, roryID, difference, fetchAble, setFetchAble }) {
     const videoRefFrontRory = useRef(null);
     const videoRefBackRory = useRef(null);
     const videoRefFront = useRef(null);
     const videoRefBack = useRef(null);
 
-    const [currentTime, setCurrentTime] = useState(0);
+    const [frontVideo, setFrontVideo] = useState(null);
+    const [backVideo, setBackVideo] = useState(null);
 
     const [gifData, setGifData] = useState([]);
     const [RoryGifData, setRoryGifData] = useState([]);
@@ -27,18 +30,18 @@ function PoseView({ videoFront, videoBack, processID, roryID, difference, fetchA
     const [roryLoading, setRoryLoading] = useState(true);
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth * 0.33,
-        height: window.innerHeight * 0.98
+        height: window.innerHeight * 0.9
     })
 
     let rory_difference = 0.010000999999999927;
     let sean_difference = 0.1499999999999999;
     let url = `http://127.0.0.1:5000/get/`;
-    let impact = 32;
 
     useEffect(() => {
         if (fetchAble) {
             fetchPredictions();
             fetchRory();
+            loadLocalVideos();
         }
 
     }, [fetchAble]);
@@ -106,8 +109,8 @@ function PoseView({ videoFront, videoBack, processID, roryID, difference, fetchA
     useEffect(() => {
         const handleResize = () => {
             setDimensions({
-                width: window.innerWidth * 0.33,
-                height: window.innerHeight * 0.98
+                width: window.innerWidth * 0.3,
+                height: window.innerHeight * 0.95
             });
         }
         
@@ -119,18 +122,30 @@ function PoseView({ videoFront, videoBack, processID, roryID, difference, fetchA
 
     }, []);
 
+    const loadLocalVideos = () => {
+        const localFront = localStorage.getItem('frontUrl');
+        const localBack = localStorage.getItem('backUrl');
+
+        if (localFront) setFrontVideo(localFront);
+        if (localBack) setBackVideo(localBack);
+    }
+
+    const handleClick = () => {
+        setFetchAble(false)
+    }
+
 
     return (
-        <>
-            <div className="pose-view">            
+        <div className="pose-view">
+            <div className="swing-views">            
                 <SwingView
                     width={dimensions.width}
                     height={dimensions.height}
                     gifData={gifData}
                     videoRefFront={videoRefFront}
                     videoRefBack={videoRefBack}
-                    videoFront={videoFront}
-                    videoBack={videoBack}
+                    videoFront={frontVideo}
+                    videoBack={backVideo}
                     frameIndex={frameIndex}
                     isLoading={isLoading}
                     isLeft={true}
@@ -148,15 +163,19 @@ function PoseView({ videoFront, videoBack, processID, roryID, difference, fetchA
                     isLeft={false}
                 />
             </div>
-            <input 
-                type="range" 
-                min="0" 
-                max={roryGifDuration} 
-                step="1"
-                onChange={handleSliderChange}
-                value={frameIndex}
-            />
-        </>
+            <div className="controls">
+                <input 
+                    type="range" 
+                    min="0" 
+                    max={roryGifDuration} 
+                    step="1"
+                    onChange={handleSliderChange}
+                    value={frameIndex}
+                    style={{ width: '15vw' }}
+                />
+                <button className="reupload" onClick={handleClick}>New</button>
+            </div>
+        </div>
     );
 }
 

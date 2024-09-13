@@ -1,36 +1,40 @@
 .upload-page {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
 
-    font-family: "Google Sans",Roboto,Arial,sans-serif;
+  font-family: "Google Sans",Roboto,Arial,sans-serif;
+
+  margin-top: 200px;
+  padding-top: 10px;
+
+  gap: 10px;
 
 }
 
 .upload-body {
-    width: 100%;
-
-    display: flex;
-    justify-content: center;
-    gap: 5vw;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 5vw;
 }
 
 .title-box {
-    height: 30px;
-    width: 60vw;
-    font-size: 32px;
-    font-weight: bolder;
+  height: 30px;
+  width: 60vw;
+  font-size: 32px;
+  font-weight: bolder;
 
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 
-    padding: 10px;
+  padding: 10px;
 
-    margin: 0%;
+  margin: 0%;
 }
 
 .getvid-card {
@@ -41,7 +45,7 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   overflow: hidden;
-  background-color: #fff;
+  background-color: rgb(255, 255, 255);;
 }
 
 .getvid-card:hover {
