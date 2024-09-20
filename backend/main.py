@@ -2,6 +2,7 @@ import os
 from config import app, db
 from model import Gif
 from flask import Flask, request, jsonify, url_for, send_file, abort
+from flask_cors import CORS, cross_origin
 from sqlalchemy import and_
 from moviepy.editor import VideoFileClip
 import uuid
@@ -11,8 +12,9 @@ import tensorflow_hub as hub
 import numpy as np
 from helpers.movenet_helpers import _keypoints_and_edges_for_display
 from helpers.vid_helpers import init_crop_region, determine_crop_region, run_inference
-from helpers.data_processors import align_vids, align_with_rory, center_pts, convert_to_json, recursive_convert_to_list
+from helpers.data_processors import align_vids, center_pts, convert_to_json, recursive_convert_to_list
 
+CORS(app)
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 PROCESSED_FOLDER = os.path.join(os.getcwd(), 'processed')
@@ -26,19 +28,22 @@ os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 os.makedirs(PREDICTED_FOLDER, exist_ok=True)
 
 # Read from
-rory_process_id = 'a6f3288e-195a-4a04-b662-85aca46d0188'
+rory_process_id = '06008295-f58f-4725-9cb4-b950665c7fbc'
 
-
+model_path = '/Users/ryanlee/Golf-Comparison/backend/movenet-tensorflow2-singlepose-thunder-v4'
 model_name = 'movenet_thunder'
 
-if model_name == 'movenet_lightning':
-    module = hub.load('https://tfhub.dev/google/movenet/singlepose/lightning/4')
-    input_size = 192
-elif model_name == 'movenet_thunder':
-    module = hub.load('https://www.kaggle.com/models/google/movenet/TensorFlow2/singlepose-thunder/4')
-    input_size = 256
-else:
-    raise ValueError("Unsupported model_name name: %s" % model_name)
+module = tf.saved_model.load(model_path)
+input_size = 256
+
+
+# if model_name == 'movenet_lightning':
+#     module = hub.load('https://tfhub.dev/google/movenet/singlepose/lightning/4')
+#     input_size = 192
+# elif model_name == 'movenet_thunder':
+#     module = hub.load('https://www.kaggle.com/models/google/movenet/TensorFlow2/singlepose-thunder/4')
+# else:
+#     raise ValueError("Unsupported model_name name: %s" % model_name)
 
 
 def movenet(input_image):
@@ -79,7 +84,9 @@ def predict(gif):
 def hello_world():
     return "Hello World!"
 
+
 @app.route("/upload", methods=['GET', 'POST'])
+@cross_origin(origins="http://localhost:5173")
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file found'}), 400
@@ -140,30 +147,31 @@ def upload_file():
         
         front_kps, back_kps, impact_frame = align_vids(front_kps, float(front_impact_time), back_kps, float(back_impact_time))
         assert len(front_kps) == len(back_kps)
-        
-        rory = Gif.query.filter_by(process_id=rory_process_id).first()
-        rory_front, rory_back = rory.front_kps, rory.back_kps
-        
-        front_kps, back_kps, temp_front, temp_back, temp_impact_frame = align_with_rory(front_kps, back_kps, rory_front, rory_back, impact_frame)
-        
-        temp_id = str(uuid.uuid4())
-        
-        temp_rory = Gif(process_id=temp_id, front_kps=temp_front, back_kps=temp_back)
         prediction = Gif(process_id=process_id, front_kps=front_kps, back_kps=back_kps)
         
         db.session.add(prediction)
-        db.session.add(temp_rory)
         db.session.commit()
 
         print('process_id: ', process_id)
-        print('rory_id:',  temp_id)
-        return jsonify({'process_id': process_id, 'rory_id': temp_id, 'impact_frame': temp_impact_frame})
+        return jsonify({'process_id': process_id})
     else:
         return jsonify({'error': 'Video not supported'}), 400
     
 @app.route("/get/<process_id>", methods=['GET'])
+@cross_origin(origins="http://localhost:5173")
 def get(process_id):
     gif = Gif.query.filter_by(process_id=process_id).first()
+    if gif:
+        response_data = gif.to_json()
+        
+        return jsonify({ 'prediction': response_data })
+    
+    return jsonify({ 'error': 'GIF not found' }), 404
+
+@app.route("/get-rory", methods=['GET'])
+@cross_origin(origins="http://localhost:5173")
+def get_rory():
+    gif = Gif.query.filter_by(process_id=rory_process_id).first()
     if gif:
         response_data = gif.to_json()
         
@@ -200,6 +208,39 @@ def get_predicted(filename):
 #################################################
 #                   Only for dev                #
 #################################################
+
+@app.route('/reload-rory', methods=['GET'])
+def reload_rory():
+    front_path, back_path = './processed/rory-front.gif', './processed/rory-back.gif'
+    
+    front = tf.io.read_file(front_path)
+    front = tf.image.decode_gif(front)
+    
+    back = tf.io.read_file(back_path)
+    back = tf.image.decode_gif(back)
+    
+    front_kps_edges = predict(front)
+    back_kps_edges = predict(back)
+    
+    front_kps = center_pts(front_kps_edges)
+    back_kps = center_pts(back_kps_edges)
+    
+    front_kps = recursive_convert_to_list(front_kps)
+    back_kps = recursive_convert_to_list(back_kps)
+    
+    front_kps, back_kps, impact_frame = align_vids(front_kps, 0.3233107015842224, back_kps, 0.3233107015842224)
+    assert len(front_kps) == len(back_kps)
+    
+    process_id = str(uuid.uuid4())
+    
+    prediction = Gif(process_id=process_id, front_kps=front_kps, back_kps=back_kps)
+    
+    db.session.add(prediction)
+    db.session.commit()
+
+    print('process_id: ', rory_process_id)
+    return jsonify({'process_id': rory_process_id})
+    
 
 @app.route('/count', methods=['GET'])
 def get_count():

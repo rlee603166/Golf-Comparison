@@ -5,7 +5,7 @@ import GetVid from "./GetVid"
 import './styles/Upload.css'
 
 
-function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFrontVideo, setFetchAble }) {
+function Upload({ setProcessID, setDifference, setBackVideo, setFrontVideo, setFetchAble }) {
     const [front, setFront] = useState(null);
     const [back, setBack] = useState(null);
 
@@ -55,6 +55,8 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
         formData.append('back_impact_time', (backTime / backDuration));
         saveToLocal();
 
+        setDifference((frontTime - backTime))
+
         try {
             const response = await fetch(upload_url, {
                 method: "POST",
@@ -62,8 +64,8 @@ function Upload({ setProcessID, setRoryID, setDifference, setBackVideo, setFront
             });
             if (response.ok) {
                 const data = await response.json();
+                console.log(data.process_id);
                 setProcessID(data.process_id);
-                setRoryID(data.rory_id);
             } else {
                 alert("File upload failed.");
             }

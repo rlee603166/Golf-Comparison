@@ -2,48 +2,50 @@ import Upload from './Upload'
 import { useEffect, useState } from 'react';
 import PoseView from './PoseView';
 import Landing from './Landing';
+import Playground from './Playground';
 
 import './styles/index.css';
 
 
 function App() {
   const [processID, setProcessID] = useState(null);
-  const [gifData, setGifData] = useState([]);
-  const [roryID, setRoryID] = useState(null);
-  const [roryGif, setRoryGif] = useState([]);
   const [difference, setDifference] = useState(0);
   const [fetchAble, setFetchAble] = useState(false);
 
   const [frontVideo, setFrontVideo] = useState(0);
   const [backVideo, setBackVideo] = useState(0);
 
+  const [playground, setPlayground] = useState(false);
+
 
   return (
     <>
-      {!fetchAble ? (
+      {!playground && (
+        !fetchAble ? (
           <>
-            <Landing />
+            <Landing setPlayground={setPlayground} />
             <Upload 
               setProcessID={setProcessID} 
-              setRoryID={setRoryID} 
               setDifference={setDifference}
               setBackVideo={setBackVideo}
               setFrontVideo={setFrontVideo}
               setFetchAble={setFetchAble}
             />
-          </> 
-        ): (
+          </>
+        ) : (
           <PoseView 
             frontVideo={frontVideo} 
             backVideo={backVideo}
             processID={processID}
-            roryID={roryID}
             difference={difference}
             fetchAble={fetchAble}
             setFetchAble={setFetchAble}
           />
         )
-      }
+      )}
+      {playground && (
+        <Playground setPlayground={setPlayground}/>
+      )}
     </>
   );
 }

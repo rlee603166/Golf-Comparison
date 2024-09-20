@@ -5,4 +5,5 @@ backend/helpers/__pycache__
 backend/__pycache__
 backend/.vscode
 backend/.ipynb_checkpoints
+backend/movenet-tensorflow2-singlepose-thunder-v4
 /Users/ryanlee/Golf-Comparison/backend/__pycache__

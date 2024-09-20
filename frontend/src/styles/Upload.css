@@ -45,7 +45,7 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   overflow: hidden;
-  background-color: rgb(255, 255, 255);;
+  background-color: rgb(255, 255, 255);
 }
 
 .getvid-card:hover {
@@ -56,12 +56,12 @@
 
 
 #buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 25px;
-    padding: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  padding: 15px;
 }
 
 
@@ -137,8 +137,8 @@ button:disabled {
 
 
 .submit {
-    background-color: #4285f4;
+  background-color: #4285f4;
 }
 .clear {
-    background-color: #737373;
+  background-color: #737373;
 }

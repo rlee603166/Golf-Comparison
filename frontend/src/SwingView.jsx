@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import './styles/SwingView.css';
 
-function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoFront, videoBack, frameIndex, isLoading, isLeft }) {
+function SwingView({ width, height, gifData, videoFront, videoBack, isLoading, isLeft, gifDuration, difference, isPlayground }) {
     const mountRef = useRef(null);
     const cameraRef = useRef(null);
     const rendererRef = useRef(null);
@@ -17,6 +17,12 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
     const [currBackKps, setCurrBackKps] = useState([]);
 
     const scaleFactor = 3;
+
+    const [frameIndex, setFrameIndex] = useState(0);
+    const videoRefFront = useRef(null);
+    const videoRefBack = useRef(null);    
+    const [videoFrontDuration, setVideoFrontDuration] = useState(0);
+    const [videoBackDuration, setVideoBackDuration] = useState(0);
 
     const edges = [
         [0, 1],
@@ -184,7 +190,6 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
             renderer.setSize(width, height);
         }
     }, [width, height, isLoading])
-    // currBackEdges, currBackKps, currFrontEdges, currFrontKps
 
     useEffect(() => {
         if (gif && !isLoading) {
@@ -193,53 +198,117 @@ function SwingView({ width, height, gifData, videoRefFront, videoRefBack, videoF
         }
     }, [frameIndex])
 
+    const handleSliderChange = (e) => {
+        const frame = parseFloat(e.target.value);
+        setFrameIndex(frame);
+        const userTime = (frame / gifDuration) * videoFrontDuration;
 
+        videoRefFront.current.currentTime = userTime;
+        videoRefBack.current.currentTime = userTime - difference;
+    };
+
+    useEffect(() => {
+        const videoFront = videoRefFront.current;
+        
+        if (!videoFront) return;  // Ensure videoFront is not null
+    
+        const handleLoadedMetadataF = () => {
+            setVideoFrontDuration(videoFront.duration);
+        };        
+    
+        videoFront.addEventListener('loadedmetadata', handleLoadedMetadataF);
+    
+        return () => {
+            videoFront.removeEventListener('loadedmetadata', handleLoadedMetadataF);
+        };
+    }, []);
+    
 
     return (
         <div className="swing-view">
-            {isLeft && (
-                <div className="videos">
-                    <div className="video-container">
-                        <video 
-                            ref={videoRefFront} 
-                            src={videoFront} 
-                            width="600" 
-                            style={{ display: 'block', marginBottom: '10px' }} 
-                        />
-                    </div>
-                    <div className="video-container">
-                        <video 
-                            ref={videoRefBack} 
-                            src={videoBack} 
-                            width="600"
-                            style={{ display: 'block', marginBottom: '10px' }} 
-                        />
-                    </div>
-                </div>
-            )}
-            <div className='three' >
-                <div ref={mountRef} style={{ width: `${width}`, height: `${height}` }}></div>
+            <div className="analytics">
+                {isPlayground && (
+                    <>
+                        {(isLeft) && (
+                            <div className="videos">
+                                <div className="video-container">
+                                    <video 
+                                        ref={videoRefFront} 
+                                        src={videoFront} 
+                                        width="600" 
+                                        style={{ display: 'block', marginBottom: '10px' }} 
+                                    />
+                                </div>
+                                <div className="video-container">
+                                    <video 
+                                        ref={videoRefBack} 
+                                        src={videoBack} 
+                                        width="600"
+                                        style={{ display: 'block', marginBottom: '10px' }} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <div className='three' >
+                            <div ref={mountRef} style={{ width: `${width}`, height: `${height}` }}></div>
+                        </div>
+                        {(!isLeft) && (
+                            <div className="videos">
+                                <div className="video-container">
+                                    <video 
+                                        ref={videoRefFront} 
+                                        src={videoFront} 
+                                        width="600" 
+                                        style={{ display: 'block', marginBottom: '10px' }} 
+                                    />
+                                </div>
+                                <div className="video-container">
+                                    <video 
+                                        ref={videoRefBack} 
+                                        src={videoBack} 
+                                        width="600"
+                                        style={{ display: 'block', marginBottom: '10px' }} 
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}    
             </div>
-            {!isLeft && (
-                <div className="videos">
-                    <div className="video-container">
-                        <video 
-                            ref={videoRefFront} 
-                            src={videoFront} 
-                            width="600" 
-                            style={{ display: 'block', marginBottom: '10px' }} 
-                        />
-                    </div>
-                    <div className="video-container">
-                        <video 
-                            ref={videoRefBack} 
-                            src={videoBack} 
-                            width="600"
-                            style={{ display: 'block', marginBottom: '10px' }} 
-                        />
+            {!isPlayground && (
+                <div className="playground">
+                    <div className="playground-container">
+                        <div className="video-playground">
+                            <video 
+                                ref={videoRefFront} 
+                                src={videoFront} 
+                                width="600"
+                                style={{ display: 'block', marginBottom: '10px' }} 
+                            />
+                        </div>
+                        <div className='three' >
+                            <div ref={mountRef} style={{ width: `${width}`, height: `${height}` }}></div>
+                        </div>
+                        <div className="video-playground">
+                            <video 
+                                ref={videoRefBack} 
+                                src={videoBack} 
+                                width="1500"
+                                style={{ display: 'block', marginBottom: '10px' }} 
+                            />
+                        </div>
                     </div>
                 </div>
             )}
+            <input 
+                type="range" 
+                min="0" 
+                max={gifDuration} 
+                step="1"
+                onChange={handleSliderChange}
+                value={frameIndex}
+                style={{ width: '15vw' }}
+            />=
         </div>
     );
 }

@@ -1,15 +1,23 @@
+import { useAutocomplete } from '@mui/material';
 import logo from './assets/logo.png';
 import background from './assets/rory-back.jpg';
 import roryFront from './assets/rory-front.png'
 import './styles/Landing.css';
 
-function Landing() {
+function Landing({ setPlayground }) {
+
+    const handleClick = () => {
+        setPlayground(true);
+    }
     
     return (
         <>
             <div className="heading">
-                <img className="logo" src={logo} />
-                <p className='title' >Rory Rater</p>
+                <div className='logo-container'>
+                    <img className="logo" src={logo} />
+                    <p className='title'>Rory Rater</p>
+                </div>
+                <button className="play-button" onClick={handleClick} >Playground</button>
             </div>
             <div className='image-container'>
                 <img className='rory-background' src={background} />
@@ -20,11 +28,28 @@ function Landing() {
                 <img className='rory-background overlay' src={roryFront} />
             </div>
             <div className='body'>
-                <div className='words'>
-                    <h1>Compare with Rory!</h1>
-                    <p>Just upload a video from the front and back views</p>
+                <div className='word-container' >
+                    <div className='words'>
+
+                        <div className='content-text'>Unlock pro-level analysis</div>
+                        <div className='content-text2'>With AI-driven insights</div>
+                    </div>
                 </div>
-                <div className="example"></div>
+                <div className="example">
+                    <img src='/rotation2.gif' className='pose-gif'/>
+                    <img src='/thunder_back.gif' className='back-gif'/>
+                </div>
+            </div>
+            <div className='body2'>
+                <div className="example2">
+                    <img src='/poseview.gif' className='pose2-gif'/>
+                </div>
+                <div className='word-container' >
+                    <div className='words'>
+                        <div className='content-text2'>Compare with Rory</div>
+                        <div className='content-text'>Using 3D technology</div>
+                    </div>
+                </div>
             </div>
         </>
     );

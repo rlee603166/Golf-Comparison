@@ -32,14 +32,12 @@ def center_pts(kps_arr):
     for i in range(num_frames):
         front_xy = kps_arr[i][0]
 
-        # Cache or replace missing points in front_xy
         if len(front_xy) < 17:
             if last_valid_xy is not None:
                 front_xy = last_valid_xy
             else:
                 front_xy = np.insert(front_xy, 10, [[front_xy[9, 0] - 1, front_xy[9, 1] - 1]], axis=0)
                 
-            print(len(front_xy))
         else:
             last_valid_xy = front_xy 
         
@@ -79,29 +77,6 @@ def align_vids(front, f_impact, back, b_impact):
         impact_frame = b_impact_frame
 
     return front, back, impact_frame
-
-def align_with_rory(front, back, rory_front, rory_back, impact_frame):
-    rory_impact = 0.6530876172001293
-    rory_impact_frame = int(len(rory_front) * rory_impact)
-    
-    difference = rory_impact_frame - impact_frame
-    
-    if difference > 0:
-        rory_front = rory_front[difference::]
-        rory_back = rory_back[difference::]
-        rory_impact_frame -= difference
-    elif difference < 0:
-        front = front[abs(difference)::]
-        back = back[abs(difference)::]
-    
-    if len(rory_front) < len(front):
-        front = front[:len(rory_front)]
-        back = back[:len(rory_front)]
-    elif len(rory_front) > len(front):
-        rory_front = rory_front[:len(front)]
-        rory_back = rory_back[:len(back)]
-        
-    return front, back, rory_front, rory_back, rory_impact_frame
 
     
     
