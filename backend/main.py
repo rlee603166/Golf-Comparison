@@ -29,7 +29,7 @@ os.makedirs(PREDICTED_FOLDER, exist_ok=True)
 
 rory_process_id = '06008295-f58f-4725-9cb4-b950665c7fbc'
 
-model_path = '/Users/ryanlee/Golf-Comparison/backend/movenet-tensorflow2-singlepose-thunder-v4'
+model_path = './movenet-tensorflow2-singlepose-thunder-v4'
 model_name = 'movenet_thunder'
 
 module = tf.saved_model.load(model_path)
@@ -75,7 +75,6 @@ def hello_world():
 
 
 @app.route("/upload", methods=['GET', 'POST'])
-@cross_origin(origins="http://localhost:5173")
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file found'}), 400
@@ -149,7 +148,6 @@ def upload_file():
         return jsonify({'error': 'Video not supported'}), 400
     
 @app.route("/get/<process_id>", methods=['GET'])
-@cross_origin(origins="http://localhost:5173")
 def get(process_id):
     gif = Gif.query.filter_by(process_id=process_id).first()
     if gif:
@@ -160,7 +158,6 @@ def get(process_id):
     return jsonify({ 'error': 'GIF not found' }), 404
 
 @app.route("/get-rory", methods=['GET'])
-@cross_origin(origins="http://localhost:5173")
 def get_rory():
     gif = Gif.query.filter_by(process_id=rory_process_id).first()
     if gif:
