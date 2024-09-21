@@ -25,7 +25,7 @@ function PoseView({ processID, roryID, difference, fetchAble, setFetchAble }) {
     const [roryLoading, setRoryLoading] = useState(true);
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth * 0.33,
-        height: window.innerHeight * 0.9
+        height: window.innerHeight * 0.8
     })
 
     let rory_difference = 0.010000999999999927;

@@ -40,14 +40,13 @@ function Upload({ setProcessID, setDifference, setBackVideo, setFrontVideo, setF
     }
 
     const handleSubmit = async () => {
-        handleOpen();
-        setDifference(frontTime - backTime);
         let upload_url = url + 'upload';
         if (!front && !back) {
             alert("Please select a file first!");
             return;
         }
-
+        setDifference(frontTime - backTime);
+        handleOpen();
         const formData = new FormData();
         formData.append('file', front);
         formData.append('file', back);    
@@ -66,15 +65,14 @@ function Upload({ setProcessID, setDifference, setBackVideo, setFrontVideo, setF
                 const data = await response.json();
                 console.log(data.process_id);
                 setProcessID(data.process_id);
+                handleClose();
+                setFetchAble(true);
             } else {
                 alert("File upload failed.");
             }
         } catch (error) {
             console.log(error);
             alert("Error uploading file.");
-        } finally {
-            handleClose();
-            setFetchAble(true);
         }
     }
 

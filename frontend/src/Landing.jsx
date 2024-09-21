@@ -1,24 +1,12 @@
 import { useAutocomplete } from '@mui/material';
-import logo from './assets/logo.png';
 import background from './assets/rory-back.jpg';
 import roryFront from './assets/rory-front.png'
 import './styles/Landing.css';
 
 function Landing({ setPlayground }) {
-
-    const handleClick = () => {
-        setPlayground(true);
-    }
     
     return (
         <>
-            <div className="heading">
-                <div className='logo-container'>
-                    <img className="logo" src={logo} />
-                    <p className='title'>Rory Rater</p>
-                </div>
-                <button className="play-button" onClick={handleClick} >Playground</button>
-            </div>
             <div className='image-container'>
                 <img className='rory-background' src={background} />
                 <div className='text-container'>

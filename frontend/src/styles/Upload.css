@@ -102,7 +102,7 @@ button {
 
 button:hover {
   background: #F6F9FE;
-  color: #174ea6;
+  color: rgb(14, 209, 1);
 }
 
 button:active {
@@ -137,8 +137,19 @@ button:disabled {
 
 
 .submit {
-  background-color: #4285f4;
+  background-color: rgb(14, 209, 1);
+
 }
 .clear {
   background-color: #737373;
+}
+
+.submit:hover {
+  background: #F6F9FE;
+  color: rgb(14, 209, 1);
+}
+
+.clear:hover {
+  background: #F6F9FE;
+  color: rgb(14, 209, 1);
 }

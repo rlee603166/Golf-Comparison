@@ -12,7 +12,7 @@ import tensorflow_hub as hub
 import numpy as np
 from helpers.movenet_helpers import _keypoints_and_edges_for_display
 from helpers.vid_helpers import init_crop_region, determine_crop_region, run_inference
-from helpers.data_processors import align_vids, center_pts, convert_to_json, recursive_convert_to_list
+from helpers.data_processors import align_vids, center_pts, convert_to_json, delete_gifs, recursive_convert_to_list
 
 CORS(app)
 
@@ -27,7 +27,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 os.makedirs(PREDICTED_FOLDER, exist_ok=True)
 
-# Read from
 rory_process_id = '06008295-f58f-4725-9cb4-b950665c7fbc'
 
 model_path = '/Users/ryanlee/Golf-Comparison/backend/movenet-tensorflow2-singlepose-thunder-v4'
@@ -35,16 +34,6 @@ model_name = 'movenet_thunder'
 
 module = tf.saved_model.load(model_path)
 input_size = 256
-
-
-# if model_name == 'movenet_lightning':
-#     module = hub.load('https://tfhub.dev/google/movenet/singlepose/lightning/4')
-#     input_size = 192
-# elif model_name == 'movenet_thunder':
-#     module = hub.load('https://www.kaggle.com/models/google/movenet/TensorFlow2/singlepose-thunder/4')
-# else:
-#     raise ValueError("Unsupported model_name name: %s" % model_name)
-
 
 def movenet(input_image):
     model = module.signatures['serving_default']
@@ -103,6 +92,7 @@ def upload_file():
     if len(videos) < 2:
         return jsonify({'error': 'Submit two videos!'}), 400
     if videos and videos[0].filename.endswith('.mp4'):
+        delete_gifs()
         gifs = []
         for video in videos:
             path = os.path.join(app.config['UPLOAD_FOLDER'], video.filename)
@@ -122,6 +112,7 @@ def upload_file():
                 print("GIF file exists.")
 
             gifs.append(gif_name)
+            
         
         Gif.query.filter(Gif.process_id != rory_process_id).delete()
         
@@ -191,9 +182,7 @@ def handle_prediction(gif_name):
     gif = tf.image.decode_gif(gif)
     
     kps_edges = predict(gif)
-    
     keypoints, edges = center_pts(kps_edges)
-    
     json_kps = [convert_to_json(keypoint, edge) for keypoint, edge in zip(keypoints, edges)]
     
     return  jsonify(json_kps)
@@ -250,7 +239,7 @@ def get_count():
     
 @app.route('/clear-database', methods=['POST'])
 def clear_database():
-    if not app.config['DEBUG']:  # Ensure this is only run in development mode
+    if not app.config['DEBUG']:
         abort(403, description="Forbidden: This endpoint is only for development.")
 
     db.session.query(Gif).filter(Gif.process_id != rory_process_id).delete()

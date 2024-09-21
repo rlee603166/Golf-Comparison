@@ -1,8 +1,10 @@
 .swing-view {
+    height: 90vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-top: 7vh;
 }
 
 .analytics {
@@ -68,7 +70,7 @@
 
 .playground {
     width: 100vw;
-    margin-top: 8vh;
+    margin-top: 1vh;
     margin-bottom: 15px;
 
 }

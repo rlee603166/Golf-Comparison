@@ -307,8 +307,12 @@ function SwingView({ width, height, gifData, videoFront, videoBack, isLoading, i
                 step="1"
                 onChange={handleSliderChange}
                 value={frameIndex}
-                style={{ width: '15vw' }}
-            />=
+                style={{
+                    width: '15vw',
+                    height: '8px',
+                    borderRadius: '5px',
+                  }}
+                />
         </div>
     );
 }

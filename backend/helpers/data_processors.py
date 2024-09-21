@@ -1,3 +1,4 @@
+import os
 import numpy as np
 
 
@@ -89,3 +90,13 @@ def recursive_convert_to_list(data):
     elif isinstance(data, dict):
         return {key: recursive_convert_to_list(value) for key, value in data.items()}
     return data
+
+def delete_gifs():
+    rory_swings = ['./backend/processed/rory-back.gif', './backend/processed/rory-front.gif']
+    
+    processed_dir = os.path.abspath('./backend/processed')
+    
+    for file in processed_dir:
+        gif_path = os.path.join(processed_dir, file)
+        if os.path.isfile(gif_path) and gif_path not in rory_swings:
+            os.remove(gif_path)
