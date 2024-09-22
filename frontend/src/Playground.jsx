@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import SwingView from "./SwingView";
 import './styles/Playground.css'
 
-import roryFront from './backend/test-videos/rory-front.mp4'
-import roryBack from './backend/test-videos/rory-back.mp4'
+import roryFront from './assets/rory-front.mp4'
+import roryBack from './assets/rory-back.mp4'
 
 function Playground({ setPlayground }) {
 
